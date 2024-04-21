@@ -6,12 +6,12 @@ trait CustomerTrait
 {
     public function createCustomer(array $customerData)
     {
-        dd('Paypal: createCustomer');
+        abort(404, 'Method not implemented');
     }
 
     public function addPaymentMethodToCustomer($customerId, array $paymentMethod)
     {
-        dd('Paypal: addPaymentMethodToCustomer');
+        abort(404, 'Method not implemented');
     }
 
 

@@ -18,13 +18,11 @@ trait PaymentTrait
         $response = Http::withHeaders($this->getHeaders())
             ->post($this->getUrl('/v2/checkout/orders'), $data);
 
-            dd($response->json());
-
         if ($response->failed()) {
             throw new \Exception('Failed to create order');
         }
 
-        dd($response->json());
+        return $response->json();
     }
 
     public function refund($transactionId, $amount = null)
