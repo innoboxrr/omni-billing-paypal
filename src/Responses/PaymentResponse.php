@@ -38,4 +38,14 @@ class PaymentResponse extends BasePaymentResponse implements PaymentResponseInte
         return null; 
     }
 
+    /**
+     * Estado de la transacción
+     * 
+     * @return string
+     */
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
 }

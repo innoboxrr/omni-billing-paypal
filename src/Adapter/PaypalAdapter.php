@@ -58,13 +58,20 @@ class PaypalAdapter extends Adapter implements ProductInterface, PriceInterface,
         $this->token = $accessToken;
     }
 
-    protected function getHeaders(): array
+    protected function getHeaders($excludeHeaders = []): array
     {
-        return [
+        $baseHeaders = [
             'Content-Type' => 'application/json',
             'PayPal-Request-Id' => Str::uuid()->toString(),
             'Authorization' => 'Bearer ' . $this->token,
         ];
+
+        // Remove excluded headers
+        foreach ($excludeHeaders as $header) {
+            unset($baseHeaders[$header]);
+        }
+
+        return $baseHeaders;
     }
 
 }
