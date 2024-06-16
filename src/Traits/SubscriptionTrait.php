@@ -2,9 +2,11 @@
 
 namespace Innoboxrr\OmniBillingPaypal\Traits;
 
+use Innoboxrr\OmniBillingPaypal\Responses\SubscriptionResponse;
+
 trait SubscriptionTrait
 {
-    public function createSubscription($customer, $plan)
+    public function createSubscription(array $data): SubscriptionResponse
     {
         dd('Paypal: createSubscription');
     }
