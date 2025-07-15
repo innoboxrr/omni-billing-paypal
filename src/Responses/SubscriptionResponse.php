@@ -35,7 +35,7 @@ class SubscriptionResponse extends BaseSubscriptionResponse implements Subscript
                 return $link['href'];  
             }
         }
-        return null; 
+        return ''; 
     }
 
     /**
