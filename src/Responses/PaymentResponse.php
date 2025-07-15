@@ -35,7 +35,7 @@ class PaymentResponse extends BasePaymentResponse implements PaymentResponseInte
                 return $link['href'];  
             }
         }
-        return null; 
+        return ''; 
     }
 
     /**

@@ -7,78 +7,41 @@ use Innoboxrr\OmniBillingPaypal\Responses\SubscriptionResponse;
 
 trait SubscriptionTrait
 {
+
     public function createSubscription(array $data): SubscriptionResponse
     {
-        $billingCycles = [
-            [
-                'frequency' => [
-                    'interval_unit' => mb_strtoupper($data['recurring']['interval']), // DAY, WEEK, MONTH, YEAR
-                    'interval_count' => $data['recurring']['interval_count']
-                ],
-                'tenure_type' => 'REGULAR',
-                'sequence' => 1,
-                'total_cycles' => 0,
-                'pricing_scheme' => [
-                    'fixed_price' => [
-                        'value' => $data['amount'],
-                        'currency_code' => mb_strtoupper($data['currency'])
-                    ]
-                ]
-            ]
-        ];
-
-        if (!empty($data['recurring']['free_trial'])) {
-            $trialDays = $data['recurring']['trial_days'];
-            $billingCycles[] = [
-                'frequency' => [
-                    'interval_unit' => 'DAY',
-                    'interval_count' => $trialDays
-                ],
-                'tenure_type' => 'TRIAL',
-                'sequence' => 1,
-                'total_cycles' => 1,
-                'pricing_scheme' => [
-                    'fixed_price' => [
-                        'value' => 0,
-                        'currency_code' => mb_strtoupper($data['currency'])
-                    ]
-                ]
-            ];
+        if (empty($data['paypal_plan_id'])) {
+            throw new \Exception('Missing required PayPal plan_id in createSubscription()');
         }
 
+        $payload = [
+            'plan_id' => $data['paypal_plan_id'],
+            'start_time' => $data['start_time'] ?? now()->toISOString(),
+            'subscriber' => [
+                'name' => [
+                    'given_name' => $data['user_name'] ?? 'Guest',
+                ],
+                'email_address' => $data['email'],
+            ],
+            'application_context' => [
+                'brand_name' => config('app.name'),
+                'locale' => 'en-US',
+                'shipping_preference' => 'NO_SHIPPING',
+                'user_action' => 'SUBSCRIBE_NOW',
+                'payment_method' => [
+                    'payer_selected' => 'PAYPAL',
+                    'payee_preferred' => 'IMMEDIATE_PAYMENT_REQUIRED',
+                ],
+                'return_url' => $this->getSuccessRedirect($data),
+                'cancel_url' => $this->cancelRedirect . '?id=' . $data['id'],
+            ],
+        ];
+
         $response = Http::withHeaders($this->getHeaders())
-            ->post($this->getUrl('/v1/billing/subscriptions'), [
-                'plan' => [
-                    'billing_cycles' => $billingCycles,
-                    'payment_preferences' => [
-                        'auto_bill_outstanding' => true,
-                        'setup_fee_failure_action' => 'CONTINUE',
-                        'payment_failure_threshold' => 3
-                    ],
-                ],
-                'start_time' => $data['start_time'] ?? now()->toISOString(),
-                'subscriber' => [
-                    'name' => [
-                        'given_name' => $data['user_name'],
-                    ],
-                    'email_address' => $data['email'],
-                ],
-                'application_context' => [
-                    'brand_name' => config('app.name'),
-                    'locale' => 'en-US',
-                    'shipping_preference' => 'NO_SHIPPING',
-                    'user_action' => 'SUBSCRIBE_NOW',
-                    'payment_method' => [
-                        'payer_selected' => 'PAYPAL',
-                        'payee_preferred' => 'IMMEDIATE_PAYMENT_REQUIRED',
-                    ],
-                    'return_url' => $this->getSuccessRedirect($data),
-                    'cancel_url' => $this->cancelRedirect . '?id=' . $data['id'],
-                ],
-            ]);
+            ->post($this->getUrl('/v1/billing/subscriptions'), $payload);
 
         if ($response->failed()) {
-            throw new \Exception('Failed to create subscription');
+            throw new \Exception('Failed to create PayPal subscription: ' . json_encode($response->json()));
         }
 
         return new SubscriptionResponse($response->json());
@@ -86,27 +49,61 @@ trait SubscriptionTrait
 
     public function cancelSubscription($subscriptionId)
     {
-        dd('Paypal: cancelSubscription');
+        $response = Http::withHeaders($this->getHeaders())
+            ->post($this->getUrl("/v1/billing/subscriptions/{$subscriptionId}/cancel"), [
+                'reason' => 'Cancelled by user'
+            ]);
+
+        if ($response->failed()) {
+            throw new \Exception("Failed to cancel PayPal subscription: " . json_encode($response->json()));
+        }
+
+        return true;
     }
 
     public function pauseSubscription($subscriptionId)
     {
-        dd('Paypal: pauseSubscription');
+        $response = Http::withHeaders($this->getHeaders())
+            ->post($this->getUrl("/v1/billing/subscriptions/{$subscriptionId}/suspend"), [
+                'reason' => 'Paused by system'
+            ]);
+
+        if ($response->failed()) {
+            throw new \Exception("Failed to pause PayPal subscription: " . json_encode($response->json()));
+        }
+
+        return true;
     }
 
     public function resumeSubscription($subscriptionId)
     {
-        dd('Paypal: resumeSubscription');
+        $response = Http::withHeaders($this->getHeaders())
+            ->post($this->getUrl("/v1/billing/subscriptions/{$subscriptionId}/activate"), [
+                'reason' => 'Resumed by system'
+            ]);
+
+        if ($response->failed()) {
+            throw new \Exception("Failed to resume PayPal subscription: " . json_encode($response->json()));
+        }
+
+        return true;
     }
 
     public function updateSubscriptionPlan($subscriptionId, $newPlan)
     {
-        dd('Paypal: updateSubscriptionPlan');
+        throw new \Exception("PayPal does not support changing the plan_id of an existing subscription. You must cancel and create a new one.");
     }
 
     public function getSubscriptionDetails($subscriptionId)
     {
-        dd('Paypal: getSubscriptionDetails');
+        $response = Http::withHeaders($this->getHeaders())
+            ->get($this->getUrl("/v1/billing/subscriptions/{$subscriptionId}"));
+
+        if ($response->failed()) {
+            throw new \Exception("Failed to fetch PayPal subscription details: " . json_encode($response->json()));
+        }
+
+        return $response->json();
     }
 
 }
