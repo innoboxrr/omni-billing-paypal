@@ -65,8 +65,6 @@ trait PriceTrait
         $response = Http::withHeaders($this->getHeaders())
             ->post($this->getUrl('/v1/billing/plans'), $payload);
 
-        dd($response->json(), 'Response from PayPal create price (plan):');
-
         if ($response->failed()) {
             throw new \Exception('Failed to create PayPal plan (price): ' . json_encode($response->json()));
         }
