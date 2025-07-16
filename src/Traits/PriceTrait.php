@@ -71,7 +71,7 @@ trait PriceTrait
         return (object) $response->json();
     }
 
-    public function getPrice(string $priceId)
+    public function getPrice($priceId)
     {
         $response = Http::withHeaders($this->getHeaders())
             ->get($this->getUrl("/v1/billing/plans/{$priceId}"));
@@ -83,7 +83,7 @@ trait PriceTrait
         return (object) $response->json();
     }
 
-    public function updatePrice(string $priceId, array $data)
+    public function updatePrice($priceId, array $data)
     {
         $patchData = [];
 
@@ -105,7 +105,7 @@ trait PriceTrait
         return true;
     }
 
-    public function deletePrice(string $priceId)
+    public function deletePrice($priceId)
     {
         // PayPal no permite eliminar planes, solo inactivarlos
         $response = Http::withHeaders($this->getHeaders())
