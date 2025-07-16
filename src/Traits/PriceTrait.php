@@ -13,23 +13,7 @@ trait PriceTrait
     public function createPrice(array $data)
     {
         $billingCycles = [];
-
-        // Plan regular
-        $billingCycles[] = [
-            'frequency' => [
-                'interval_unit' => mb_strtoupper($data['interval']),
-                'interval_count' => $data['interval_count'],
-            ],
-            'tenure_type' => 'REGULAR',
-            'sequence' => 2,
-            'total_cycles' => 0,
-            'pricing_scheme' => [
-                'fixed_price' => [
-                    'value' => number_format($data['amount'], 2, '.', ''),
-                    'currency_code' => mb_strtoupper($data['currency']),
-                ],
-            ],
-        ];
+        $sequence = 1;
 
         // Plan de prueba (opcional)
         if (!empty($data['free_trial']) && !empty($data['trial_days'])) {
@@ -39,7 +23,7 @@ trait PriceTrait
                     'interval_count' => $data['trial_days'],
                 ],
                 'tenure_type' => 'TRIAL',
-                'sequence' => 1,
+                'sequence' => $sequence++,
                 'total_cycles' => 1,
                 'pricing_scheme' => [
                     'fixed_price' => [
@@ -49,6 +33,23 @@ trait PriceTrait
                 ],
             ];
         }
+
+        // Plan regular
+        $billingCycles[] = [
+            'frequency' => [
+                'interval_unit' => mb_strtoupper($data['interval']),
+                'interval_count' => $data['interval_count'],
+            ],
+            'tenure_type' => 'REGULAR',
+            'sequence' => $sequence++,
+            'total_cycles' => 0,
+            'pricing_scheme' => [
+                'fixed_price' => [
+                    'value' => number_format($data['amount'], 2, '.', ''),
+                    'currency_code' => mb_strtoupper($data['currency']),
+                ],
+            ],
+        ];
 
         $payload = [
             'product_id' => $data['product_id'],
@@ -63,6 +64,8 @@ trait PriceTrait
 
         $response = Http::withHeaders($this->getHeaders())
             ->post($this->getUrl('/v1/billing/plans'), $payload);
+
+        dd($response->json(), 'Response from PayPal create price (plan):');
 
         if ($response->failed()) {
             throw new \Exception('Failed to create PayPal plan (price): ' . json_encode($response->json()));
