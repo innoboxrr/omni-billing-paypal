@@ -29,7 +29,7 @@ trait PaymentTrait
                             'payment_method_preference' => 'IMMEDIATE_PAYMENT_REQUIRED',
                             'user_action' => 'PAY_NOW',
                             'return_url' => $this->getSuccessRedirect($data),
-                            'cancel_url' => $this->cancelRedirect . '?id=' . $data['id'],
+                            'cancel_url' => $this->getCancelRedirect($data),
                         ],
                         'email_address' => $data['email'],
                         'name' => [
