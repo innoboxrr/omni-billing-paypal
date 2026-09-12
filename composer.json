@@ -1,6 +1,6 @@
 {
     "name": "innoboxrr/omni-billing-paypal",
-    "description": "El adaptador de PayPal para OmniBilling facilita la integraci\u00f3n completa con PayPal, ofreciendo a los desarrolladores la capacidad de realizar pagos, gestionar suscripciones y clientes, y acceder a funcionalidades espec\u00edficas de PayPal mediante la interfaz unificada de OmniBilling.",
+    "description": "El adaptador de PayPal para OmniBilling facilita la integración completa con PayPal, ofreciendo a los desarrolladores la capacidad de realizar pagos, gestionar suscripciones y clientes, y acceder a funcionalidades específicas de PayPal mediante la interfaz unificada de OmniBilling.",
     "license": "MIT",
     "autoload": {
         "psr-4": {
@@ -14,8 +14,9 @@
         }
     ],
     "require-dev": {
-        "orchestra/testbench": "^8",
-        "innoboxrr/larapack-generator": "^4.0"
+        "orchestra/testbench": "^11.0",
+        "innoboxrr/larapack-generator": "^7.0",
+        "phpunit/phpunit": "^11.5 || ^12.0"
     },
     "extra": {
         "laravel": {
@@ -25,6 +26,16 @@
         },
         "omni-billing": {
             "paypal": "Innoboxrr\\OmniBillingPaypal\\Adapter\\PaypalAdapter"
+        }
+    },
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^13.0",
+        "innoboxrr/omni-billing": "^2.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Innoboxrr\\OmniBillingPaypal\\Tests\\": "tests/"
         }
     }
 }
